@@ -1,0 +1,6 @@
+{
+  "name": "SriVerse",
+  "description": "Interactive cinematic portfolio of Srirangapprasath I, featuring 10 holographic dimensions and an AI digital twin.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
