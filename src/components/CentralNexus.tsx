@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Globe2, Cpu, GraduationCap, Target, Milestone, FlaskConical,
@@ -112,6 +112,109 @@ export default function CentralNexus({ onOpenPortal, activePortal, onClosePortal
     { id: 10, name: "NETWORK NODE", codename: "RELATIONAL_NET", icon: Share2, color: "text-cyan-400 border-cyan-500/20 shadow-cyan-500/10", glowColor: "rgba(6, 182, 212, 0.25)" }
   ];
 
+  // Create stable, completely randomized orbital physics configurations for each portal planet on mount
+  const orbitalParams = useMemo(() => {
+    return portals.map((portal, index) => {
+      // Base radius of orbit: inner planets closer to central sun, outer planets spaced farther
+      const baseRadiusX = 220 + index * 34 + (Math.random() - 0.5) * 8;
+      
+      // Keplerian velocity approximation: inner orbits move faster, with a slight randomized modifier
+      const randomSpeedOffset = 0.85 + Math.random() * 0.3;
+      const speedFactor = 1.45 * Math.pow(220 / baseRadiusX, 0.72) * randomSpeedOffset;
+      
+      // Personal orbital inclination (aspect ratio Y vs X)
+      const tilt = 0.22 + Math.random() * 0.12;
+      
+      // Complete 2D planar roll incline (in radians, from -18 to +18 degrees) which angles the orbit
+      const rollIncline = (Math.random() - 0.5) * 0.32;
+      
+      // Randomized initial angle distribution around the orbit
+      const initialPhase = Math.random() * 2 * Math.PI;
+
+      // Spontaneous orbit direction (clockwise 85%, counter-clockwise 15% for added space variance)
+      const direction = Math.random() > 0.15 ? 1 : -1;
+
+      return {
+        id: portal.id,
+        radiusX: baseRadiusX,
+        speedFactor,
+        tilt,
+        rollIncline,
+        initialPhase,
+        direction,
+      };
+    });
+  }, []);
+
+  // Compute collision-free 2D screen positions to completely eliminate any card shielding (overlaps)
+  const resolvedPositions = useMemo(() => {
+    // 1. Calculate raw orbits 2D projected positions
+    let positions = portals.map((portal, index) => {
+      const params = orbitalParams[index];
+      // compute current theta (angle)
+      const theta = params.initialPhase + (rotation * params.speedFactor * params.direction * (Math.PI / 180));
+      
+      // standard coordinates on direct ellipse
+      const px = params.radiusX * Math.cos(theta);
+      const py = params.radiusX * params.tilt * Math.sin(theta);
+      
+      // rotate coordinates by the spatial rollIncline tilt
+      const xPos = px * Math.cos(params.rollIncline) - py * Math.sin(params.rollIncline);
+      const yPos = px * Math.sin(params.rollIncline) + py * Math.cos(params.rollIncline);
+      
+      // z-depth metric used for scaling and interactive overlapping zIndices
+      const zPos = 80 * Math.sin(theta);
+      const scale = 0.8 + (zPos / 80) * 0.18;
+      const zIndex = Math.round(50 + zPos);
+
+      return {
+        portal,
+        params,
+        x: xPos,
+        y: yPos,
+        z: zPos,
+        scale,
+        zIndex,
+        baseX: xPos,
+        baseY: yPos,
+      };
+    });
+
+    // 2. Perform 2D card relaxation passes to remove any overlaps ("no shielding")
+    const ITERATIONS = 8;
+    const minWidth = 195;  // safety clearance width of a card block
+    const minHeight = 90;  // safety clearance height of a card block
+
+    for (let pass = 0; pass < ITERATIONS; pass++) {
+      for (let i = 0; i < positions.length; i++) {
+        for (let j = i + 1; j < positions.length; j++) {
+          const dx = positions[i].x - positions[j].x;
+          const dy = positions[i].y - positions[j].y;
+
+          const ratioX = Math.abs(dx) / minWidth;
+          const ratioY = Math.abs(dy) / minHeight;
+
+          // If within overlap box
+          if (ratioX < 1 && ratioY < 1) {
+            const overlapX = minWidth - Math.abs(dx);
+            const overlapY = minHeight - Math.abs(dy);
+
+            // Push both symmetrically away in both dimensions
+            const pushX = (dx >= 0 ? 1 : -1) * (overlapX * 0.5);
+            const pushY = (dy >= 0 ? 1 : -1) * (overlapY * 0.5);
+
+            positions[i].x += pushX;
+            positions[i].y += pushY;
+            positions[j].x -= pushX;
+            positions[j].y -= pushY;
+          }
+        }
+      }
+    }
+
+    return positions;
+  }, [rotation, orbitalParams]);
+
   return (
     <div
       ref={containerRef}
@@ -199,58 +302,34 @@ export default function CentralNexus({ onOpenPortal, activePortal, onClosePortal
               </div>
             </div>
 
-            {/* INDEPENDENT ORBITAL TRACK RUNWAYS (Concentric planetary paths) */}
-            {portals.map((portal, index) => {
-              const tilt = 0.28;
-              const radiusX = 210 + index * 30; // separate concentric radii
-              const radiusY = radiusX * 0.4; // matching elliptical depth aspect ratio
+            {/* INDEPENDENT ORBITAL TRACK RUNWAYS (Planetary paths mapped to randomized inclination orbits) */}
+            {orbitalParams.map((params, index) => {
+              const rx = params.radiusX;
+              const ry = rx * params.tilt;
               
               // Map indexes to matching subtle theme colors matching the portal specs
               const ringColor = index % 3 === 0 
-                ? "border-blue-500/[0.05]" 
+                ? "border-blue-500/[0.04]" 
                 : index % 3 === 1 
-                  ? "border-purple-500/[0.04]" 
-                  : "border-cyan-500/[0.05]";
+                  ? "border-purple-500/[0.03]" 
+                  : "border-cyan-500/[0.04]";
 
               return (
                 <div
-                  key={`orbit-track-${portal.id}`}
+                  key={`orbit-track-${params.id}`}
                   style={{
-                    width: `${radiusX * 2}px`,
-                    height: `${radiusY * 2 * (1 - tilt)}px`,
-                    transform: "translate3d(0, 0, -10px)",
+                    width: `${rx * 2}px`,
+                    height: `${ry * 2}px`,
+                    transform: `translate3d(0, 0, -50px) rotate(${params.rollIncline}rad)`,
                   }}
                   className={`absolute pointer-events-none rounded-full border ${ringColor}`}
                 />
               );
             })}
 
-            {/* ORBITING PORTAL ELEMENTS (Individual dynamic Keplerian orbits) */}
-            {portals.map((portal, index) => {
-              const tilt = 0.28; // tilt parameter
-
-              // Individual planetary orbits spacing
-              const radiusX = 210 + index * 30; // separate radii from inner (210) to outer (480)
-              const radiusY = radiusX * 0.4;
-              
-              // Keplerian physics approximation: inner planets orbit faster than outer planets!
-              const speedFactor = 1.3 * Math.pow(210 / radiusX, 0.7);
-              
-              // Beautifully dispersed starting phase angles to distribute planets 360 degrees around the sun
-              const initialPhase = index * (2 * Math.PI / 4) + (index * 0.6);
-              
-              // Current angular position
-              const theta = initialPhase + (rotation * speedFactor * (Math.PI / 180));
-
-              // Compute floating X & Y coordinates
-              const xPos = radiusX * Math.cos(theta);
-              const yPos = radiusY * Math.sin(theta);
-              const zPos = 80 * Math.sin(theta); // depth coordinate inside 3D environment
-
-              // Scalability on perspective depth bounds
-              const scale = 0.8 + (zPos / 80) * 0.18;
-              const zIndex = Math.round(50 + zPos);
-
+            {/* ORBITING PORTAL ELEMENTS (Individual dynamic Keplerian orbits with real-time overlap avoidance) */}
+            {resolvedPositions.map((pos) => {
+              const { portal, scale, zIndex, x, y } = pos;
               const IconComponent = portal.icon;
 
               return (
@@ -262,7 +341,7 @@ export default function CentralNexus({ onOpenPortal, activePortal, onClosePortal
                     onOpenPortal(portal.id);
                   }}
                   style={{
-                    transform: `translate3d(${xPos}px, ${yPos * (1 - tilt)}px, ${zPos}px) scale(${scale})`,
+                    transform: `translate3d(${x}px, ${y}px, ${pos.z}px) scale(${scale})`,
                     zIndex: zIndex
                   }}
                   className={`absolute w-44 p-3.5 bg-[#020205]/80 border border-white/10 backdrop-blur-xl rounded-xl hover:border-blue-500/40 hover:bg-white/5 transition-all duration-300 flex flex-col items-center text-center cursor-pointer group shadow-[0_0_15px_rgba(59,130,246,0.05)] hover:shadow-[0_0_25px_rgba(59,130,246,0.15)]`}
