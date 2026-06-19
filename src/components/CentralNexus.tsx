@@ -199,13 +199,48 @@ export default function CentralNexus({ onOpenPortal, activePortal, onClosePortal
               </div>
             </div>
 
-            {/* ORBITING PORTAL ELEMENTS (3D Ellipsoid mathematical layout) */}
+            {/* INDEPENDENT ORBITAL TRACK RUNWAYS (Concentric planetary paths) */}
             {portals.map((portal, index) => {
-              // Calculate coordinate points on tilted ellipsoid ring
+              const tilt = 0.28;
+              const radiusX = 210 + index * 30; // separate concentric radii
+              const radiusY = radiusX * 0.4; // matching elliptical depth aspect ratio
+              
+              // Map indexes to matching subtle theme colors matching the portal specs
+              const ringColor = index % 3 === 0 
+                ? "border-blue-500/[0.05]" 
+                : index % 3 === 1 
+                  ? "border-purple-500/[0.04]" 
+                  : "border-cyan-500/[0.05]";
+
+              return (
+                <div
+                  key={`orbit-track-${portal.id}`}
+                  style={{
+                    width: `${radiusX * 2}px`,
+                    height: `${radiusY * 2 * (1 - tilt)}px`,
+                    transform: "translate3d(0, 0, -10px)",
+                  }}
+                  className={`absolute pointer-events-none rounded-full border ${ringColor}`}
+                />
+              );
+            })}
+
+            {/* ORBITING PORTAL ELEMENTS (Individual dynamic Keplerian orbits) */}
+            {portals.map((portal, index) => {
               const tilt = 0.28; // tilt parameter
-              const theta = (index * 2 * Math.PI) / 10 + (rotation * Math.PI) / 180;
-              const radiusX = 390; // width of ellipse
-              const radiusY = 160; // depth of ellipse
+
+              // Individual planetary orbits spacing
+              const radiusX = 210 + index * 30; // separate radii from inner (210) to outer (480)
+              const radiusY = radiusX * 0.4;
+              
+              // Keplerian physics approximation: inner planets orbit faster than outer planets!
+              const speedFactor = 1.3 * Math.pow(210 / radiusX, 0.7);
+              
+              // Beautifully dispersed starting phase angles to distribute planets 360 degrees around the sun
+              const initialPhase = index * (2 * Math.PI / 4) + (index * 0.6);
+              
+              // Current angular position
+              const theta = initialPhase + (rotation * speedFactor * (Math.PI / 180));
 
               // Compute floating X & Y coordinates
               const xPos = radiusX * Math.cos(theta);
@@ -213,7 +248,7 @@ export default function CentralNexus({ onOpenPortal, activePortal, onClosePortal
               const zPos = 80 * Math.sin(theta); // depth coordinate inside 3D environment
 
               // Scalability on perspective depth bounds
-              const scale = 0.85 + (zPos / 80) * 0.15;
+              const scale = 0.8 + (zPos / 80) * 0.18;
               const zIndex = Math.round(50 + zPos);
 
               const IconComponent = portal.icon;
@@ -230,7 +265,7 @@ export default function CentralNexus({ onOpenPortal, activePortal, onClosePortal
                     transform: `translate3d(${xPos}px, ${yPos * (1 - tilt)}px, ${zPos}px) scale(${scale})`,
                     zIndex: zIndex
                   }}
-                  className={`absolute w-44 p-3.5 bg-[#020205]/75 border border-white/10 backdrop-blur-xl rounded-xl hover:border-blue-500/40 hover:bg-white/5 transition-all duration-300 flex flex-col items-center text-center cursor-pointer group shadow-[0_0_15px_rgba(59,130,246,0.05)] hover:shadow-[0_0_25px_rgba(59,130,246,0.15)]`}
+                  className={`absolute w-44 p-3.5 bg-[#020205]/80 border border-white/10 backdrop-blur-xl rounded-xl hover:border-blue-500/40 hover:bg-white/5 transition-all duration-300 flex flex-col items-center text-center cursor-pointer group shadow-[0_0_15px_rgba(59,130,246,0.05)] hover:shadow-[0_0_25px_rgba(59,130,246,0.15)]`}
                 >
                   {/* Subtle color highlight */}
                   <div className="absolute inset-0 rounded-xl bg-white/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
