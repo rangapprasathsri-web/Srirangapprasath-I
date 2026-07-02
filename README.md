@@ -1,5 +1,5 @@
-<h1 align="center">Hi 👋, I'm Your Name</h1>
-<h3 align="center">A passionate developer from Earth 🌍</h3>
+<h1 align="center">Hi 👋, I'm Srirangapprasath I</h1>
+<h3 align="center">A passionate AI Engineer from Earth 🌍</h3>
 
 <p align="center">
   <a href="https://git.io/typing-svg">
@@ -11,26 +11,22 @@
 
 ### 🚀 About Me
 
-- 🔭 I'm currently working on **[Project Name]**
-- 🌱 I'm currently learning **[Technology]**
-- 👯 I'm looking to collaborate on **[Type of Projects]**
-- 💬 Ask me about **[Your Expertise]**
-- 📫 How to reach me: **your.email@example.com**
-- ⚡ Fun fact: **[Something fun about you]**
+- 🌱 I'm currently learning **[Artificial Intelligence]**
+- 👯 I'm looking to collaborate on **[AI PROJECTS]**
+- 💬 Ask me about **[AI & ML]**
+- 📫 How to reach me: **rangapprasathsri@gmail.com**
+- ⚡ Fun fact: **[I like to learn eventhough I'm in my coffin]**
 
 ---
 
 ### 🔗 Portfolio & Connect
 
 <p align="left">
-  <a href="https://your-portfolio-url.com" target="_blank">
+  <a href="https://srirangapprasath-i.vercel.app/" target="_blank">
     <img src="https://img.shields.io/badge/Portfolio-000000?style=for-the-badge&logo=About.me&logoColor=white" />
   </a>
-  <a href="https://linkedin.com/in/your-linkedin" target="_blank">
+  <a href="www.linkedin.com/in/srirangapprasath-i-167985383" target="_blank">
     <img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" />
-  </a>
-  <a href="https://twitter.com/your-twitter" target="_blank">
-    <img src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" />
   </a>
 </p>
 
@@ -48,16 +44,6 @@
   <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white" />
   <img src="https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white" />
 </p>
-
----
-
-### 💼 Current Projects
-
-| Project | Description | Tech Stack |
-|---------|-------------|------------|
-| [Project One](https://github.com/your-username/project-one) | Brief description of the project | React, Node.js |
-| [Project Two](https://github.com/your-username/project-two) | Brief description of the project | Python, Flask |
-| [Project Three](https://github.com/your-username/project-three) | Brief description of the project | TypeScript |
 
 ---
 
